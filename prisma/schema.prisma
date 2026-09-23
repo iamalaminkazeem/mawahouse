@@ -29,24 +29,24 @@ model Category {
 }
 
 model MenuItem {
-  id            String      @id @default(cuid())
-  name          String
-  description   String?
-  price         Float
-  imageUrl      String?
-  categoryId    String
-  category      Category    @relation(fields: [categoryId], references: [id], onDelete: Cascade)
-  available     Boolean     @default(true)
-  featured      Boolean     @default(false)
-  sortOrder     Int         @default(0)
-  dietaryTags   String[]    @default([])
-  allergens     String[]    @default([])
-  notes         String?
-  sizes         Json?
-  addOns        AddOn[]
-  orderItems    OrderItem[]
-  createdAt     DateTime    @default(now())
-  updatedAt     DateTime    @updatedAt
+  id          String      @id @default(cuid())
+  name        String
+  description String?
+  price       Float
+  imageUrl    String?
+  categoryId  String
+  category    Category    @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  available   Boolean     @default(true)
+  featured    Boolean     @default(false)
+  sortOrder   Int         @default(0)
+  dietaryTags String[]    @default([])
+  allergens   String[]    @default([])
+  notes       String?
+  sizes       Json?
+  addOns      AddOn[]
+  orderItems  OrderItem[]
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
 }
 
 model AddOn {
@@ -169,52 +169,53 @@ model OrderCounter {
 }
 
 model SiteSettings {
-  id                 String   @id @default("main")
+  id                  String   @id @default("main")
 
-  restaurantName     String   @default("MaWa House")
-  tagline            String   @default("Taste Africa. Feel at Home.")
-  address            String   @default("524 Main St, Suite B, Atlanta, GA 30011")
-  phone              String   @default("470-815-6319")
-  whatsappNumber     String?
-  email              String?
+  restaurantName      String   @default("MaWa House")
+  tagline             String   @default("Taste Africa. Feel at Home.")
+  address             String   @default("524 Main St, Suite B, Atlanta, GA 30011")
+  phone               String   @default("470-815-6319")
+  whatsappNumber      String?
+  email               String?
 
-  hours              Json     @default("{}")
+  hours               Json     @default("{}")
 
-  heroHeadline       String   @default("Where African Flavor Meets Modern Hospitality")
-  heroSubtext        String   @default("Discover a warm and welcoming dining experience inspired by African flavors, culture, and community.")
-  heroImageUrl       String?
-  heroBadge          String?
+  heroHeadline        String   @default("Where African Flavor Meets Modern Hospitality")
+  heroSubtext         String   @default("Discover a warm and welcoming dining experience inspired by African flavors, culture, and community.")
+  heroImageUrl        String?
+  heroBadge           String?
 
-  welcomeHeadline    String   @default("Good Food. Great People. Stronger Community.")
-  welcomeBody        String?
+  welcomeHeadline     String   @default("Good Food. Great People. Stronger Community.")
+  welcomeBody         String?
 
-  aboutHeadline      String?
-  aboutBody          String?
-  aboutImageUrl      String?
+  aboutHeadline       String?
+  aboutBody           String?
+  aboutImageUrl       String?
 
   orderOnlineButtonText String @default("Order Online")
-  orderingEnabled     Boolean  @default(true)
-  deliveryEnabled     Boolean  @default(false)
-  deliveryFee         Float?
-  deliveryMinimum     Float?
-  deliveryNote        String?
-  taxEnabled          Boolean  @default(false)
-  taxRate             Float?
-  orderReceivedNote   String   @default("Your order has been received and will be reviewed by our team.")
+  orderingEnabled      Boolean  @default(true)
+  deliveryEnabled      Boolean  @default(false)
+  deliveryFee          Float?
+  deliveryMinimum      Float?
+  deliveryNote         String?
+  taxEnabled           Boolean  @default(false)
+  taxRate              Float?
+  orderReceivedNote    String   @default("Your order has been received and will be reviewed by our team.")
 
-  reservationUrl     String?
-  reservationPlatform String?
-  reservationButtonText String @default("Reserve a Table")
+  // Catering Settings
+  cateringUrl         String?
+  cateringPlatform    String?
+  cateringButtonText  String   @default("Inquire for Catering")
 
-  googleMapsUrl      String?
-  googleMapsEmbedUrl String?
+  googleMapsUrl       String?
+  googleMapsEmbedUrl  String?
 
-  instagramUrl       String?  @default("https://instagram.com/mawahouse_1")
+  instagramUrl        String?  @default("https://instagram.com/mawahouse_1")
   tiktokUrl           String?  @default("https://tiktok.com/@mawa.house4")
   facebookUrl         String?
 
-  announcementEnabled Boolean @default(false)
+  announcementEnabled Boolean  @default(false)
   announcementText    String?
 
-  updatedAt          DateTime @updatedAt
+  updatedAt           DateTime @updatedAt
 }

@@ -9,7 +9,7 @@ const links = [
   { href: "/menu", label: "Menu" },
   { href: "/about", label: "About" },
   { href: "/gallery", label: "Gallery" },
-  { href: "/reservations", label: "Reservations" },
+  { href: "/Catering", label: "Catering Events" },
   { href: "/contact", label: "Contact" },
 ];
 
@@ -49,7 +49,7 @@ export default function Navigation({ settings }: { settings: any }) {
         </nav>
 
         <div className="hidden lg:flex items-center gap-3">
-          <Link href="/reservations" className="btn-secondary !py-2 !px-4 text-sm">
+          <Link href="/Catering" className="btn-secondary !py-2 !px-4 text-sm">
             {settings.reservationButtonText || "Reserve a Table"}
           </Link>
           <Link href={orderHref} className="btn-primary !py-2 !px-4 text-sm">
@@ -79,7 +79,7 @@ export default function Navigation({ settings }: { settings: any }) {
             </Link>
           ))}
           <div className="flex flex-col gap-3 pt-4">
-            <Link href="/reservations" className="btn-secondary" onClick={() => setOpen(false)}>
+            <Link href="/Catering" className="btn-secondary" onClick={() => setOpen(false)}>
               {settings.reservationButtonText || "Reserve a Table"}
             </Link>
             <Link href={orderHref} className="btn-primary" onClick={() => setOpen(false)}>

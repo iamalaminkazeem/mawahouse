@@ -19,7 +19,7 @@ const links = [
   { href: "/admin/restaurant", label: "Restaurant Info" },
   { href: "/admin/hours", label: "Hours" },
   { href: "/admin/ordering", label: "Ordering" },
-  { href: "/admin/reservations", label: "Reservations" },
+  { href: "/admin/catering", label: "Catering Services" },
   { href: "/admin/socials", label: "Socials" },
   { href: "/admin/settings", label: "Settings" },
 ];
