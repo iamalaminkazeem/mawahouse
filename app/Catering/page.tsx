@@ -53,7 +53,7 @@ export default async function CateringPage() {
         <Utensils size={44} className="mx-auto text-mawa-gold mb-4" />
         <h1 className="section-heading mb-4">MaWa Catering & Events</h1>
         <p className="text-mawa-black/80 text-lg leading-relaxed mb-6">
-          Bring the authentic taste of MaWa to your next gathering. Whether you are hosting an intimate celebration, a corporate event, or a large family gathering, our catering options are thoughtfully crafted for every occasion.
+          Bring the authentic taste of MaWa to your next gathering, Whether you are hosting an intimate celebration, a corporate event, or a large family gathering, our catering options are thoughtfully crafted for every occasion.
         </p>
 
         {/* Primary CTA */}
