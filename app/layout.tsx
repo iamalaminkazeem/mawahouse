@@ -7,6 +7,9 @@ import { getSettings } from "@/lib/utils/settings";
 import { CartProvider } from "@/lib/cart/CartContext";
 import FloatingCartButton from "@/components/cart/FloatingCartButton";
 
+// Re-fetch site settings/content at most once a minute (also refreshed instantly on admin save)
+export const revalidate = 60;
+
 const playfair = Playfair_Display({
   subsets: ["latin"],
   variable: "--font-playfair",

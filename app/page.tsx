@@ -57,8 +57,8 @@ export default async function HomePage() {
           <p className="mt-6 text-lg text-mawa-cream/85 max-w-xl">{settings.heroSubtext}</p>
           <div className="mt-9 flex flex-wrap gap-4">
             <Link href="/menu" className="btn-primary">View Menu</Link>
-            <Link href="/reservations" className="btn-secondary !border-mawa-gold-light !text-mawa-cream hover:!text-mawa-black">
-              {settings.reservationButtonText}
+            <Link href="/catering" className="btn-secondary !border-mawa-gold-light !text-mawa-cream hover:!text-mawa-black">
+              {settings.cateringButtonText || "Catering"}
             </Link>
           </div>
         </div>
@@ -117,21 +117,21 @@ export default async function HomePage() {
         </section>
       )}
 
-      {/* ORDER + RESERVE CTA STRIP */}
+      {/* ORDER + CATERING CTA STRIP */}
       <section className="py-20 bg-mawa-black text-mawa-cream text-center">
         <div className="container-mawa">
           <h2 className="font-serif text-3xl sm:text-4xl font-semibold mb-4">
             Hungry? Let's fix that.
           </h2>
           <p className="text-mawa-cream/70 mb-8 max-w-xl mx-auto">
-            Order online for pickup or delivery, or reserve a table for the full MaWa House experience.
+            Order online for pickup or delivery, or book MaWa House catering for your next event.
           </p>
           <div className="flex flex-wrap justify-center gap-4">
-            <Link href="/order-online" className="btn-primary">
-              {settings.orderOnlineButtonText}
+            <Link href="/menu" className="btn-primary">
+              {settings.orderOnlineButtonText || "Order Online"}
             </Link>
-            <Link href="/reservations" className="btn-secondary !text-mawa-cream hover:!text-mawa-black">
-              {settings.reservationButtonText}
+            <Link href="/catering" className="btn-secondary !text-mawa-cream hover:!text-mawa-black">
+              {settings.cateringButtonText || "Catering"}
             </Link>
           </div>
         </div>

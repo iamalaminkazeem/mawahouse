@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { revalidatePath } from "next/cache";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth/options";
 import { prisma } from "@/lib/db/prisma";
@@ -23,5 +24,8 @@ export async function POST(req: NextRequest) {
   }
 
   const item = await prisma.menuItem.create({ data: parsed.data });
+
+  revalidatePath("/", "layout");
+
   return NextResponse.json(item, { status: 201 });
 }

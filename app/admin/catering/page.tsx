@@ -1,8 +1,16 @@
-export default function AdminCateringPage() {
+import { getSettings } from "@/lib/utils/settings";
+import SettingsForm from "@/components/admin/SettingsForm";
+
+export default async function AdminCateringPage() {
+  const settings = await getSettings();
   return (
-    <div className="p-8">
-      <h1 className="text-2xl font-bold mb-4">Catering Management</h1>
-      <p>Configure catering options and settings here.</p>
-    </div>
+    <SettingsForm
+      title="Catering Services"
+      initialValues={JSON.parse(JSON.stringify(settings))}
+      fields={[
+        { key: "cateringUrl", label: "Catering Request Link (form or booking page)", type: "url" },
+        { key: "cateringButtonText", label: "Catering Button Text", placeholder: "Inquire for Catering" },
+      ]}
+    />
   );
 }

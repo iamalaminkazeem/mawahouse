@@ -28,7 +28,7 @@ export default function Footer({ settings }: { settings: any }) {
         </div>
         <div className="flex flex-col gap-2 text-sm">
           <Link href="/menu" className="hover:text-mawa-gold">Menu</Link>
-          <Link href="/Catering services" className="hover:text-mawa-gold">Catering Events</Link>
+          <Link href="/catering" className="hover:text-mawa-gold">Catering Events</Link>
           <Link href="/order-online" className="hover:text-mawa-gold">Order Online</Link>
           <Link href="/contact" className="hover:text-mawa-gold">Contact</Link>
         </div>
