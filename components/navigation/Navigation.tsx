@@ -50,7 +50,7 @@ export default function Navigation({ settings }: { settings: any }) {
 
         <div className="hidden lg:flex items-center gap-3">
           <Link href="/catering" className="btn-secondary !py-2 !px-4 text-sm">
-            {settings.cateringButtonText || "Reserve a Table"}
+            {settings.cateringButtonText || "Catering"}
           </Link>
           <Link href={orderHref} className="btn-primary !py-2 !px-4 text-sm">
             {settings.orderOnlineButtonText || "Order Online"}
@@ -80,7 +80,7 @@ export default function Navigation({ settings }: { settings: any }) {
           ))}
           <div className="flex flex-col gap-3 pt-4">
             <Link href="/catering" className="btn-secondary" onClick={() => setOpen(false)}>
-              {settings.cateringButtonText || "Reserve a Table"}
+              {settings.cateringButtonText || "Catering"}
             </Link>
             <Link href={orderHref} className="btn-primary" onClick={() => setOpen(false)}>
               {settings.orderOnlineButtonText || "Order Online"}
