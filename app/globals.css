@@ -1,0 +1,32 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  -webkit-font-smoothing: antialiased;
+}
+
+.container-mawa {
+  @apply max-w-7xl mx-auto px-5 sm:px-8;
+}
+
+.btn-primary {
+  @apply inline-flex items-center justify-center gap-2 rounded-full bg-mawa-red text-mawa-cream px-6 py-3 font-medium tracking-wide transition-all duration-300 hover:bg-mawa-red-dark hover:shadow-lg hover:-translate-y-0.5;
+}
+
+.btn-secondary {
+  @apply inline-flex items-center justify-center gap-2 rounded-full border-2 border-mawa-gold text-mawa-black px-6 py-3 font-medium tracking-wide transition-all duration-300 hover:bg-mawa-gold hover:text-mawa-black hover:-translate-y-0.5;
+}
+
+.section-heading {
+  @apply font-serif text-3xl sm:text-4xl font-semibold text-mawa-black;
+}
+
+.fade-up {
+  animation: fadeUp 0.6s ease-out forwards;
+  opacity: 0;
+}

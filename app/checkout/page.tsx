@@ -1,0 +1,22 @@
+import { getSettings } from "@/lib/utils/settings";
+import CheckoutForm from "@/components/cart/CheckoutForm";
+
+export default async function CheckoutPage() {
+  const settings = await getSettings();
+
+  return (
+    <div className="container-mawa py-16 max-w-2xl mx-auto">
+      <h1 className="section-heading mb-8 text-center">Checkout</h1>
+      <CheckoutForm
+        deliveryEnabled={settings.deliveryEnabled}
+        deliveryFee={settings.deliveryFee}
+        deliveryMinimum={settings.deliveryMinimum}
+        deliveryNote={settings.deliveryNote}
+        taxEnabled={settings.taxEnabled}
+        taxRate={settings.taxRate}
+        restaurantAddress={settings.address}
+        restaurantPhone={settings.phone}
+      />
+    </div>
+  );
+}
