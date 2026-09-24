@@ -13,7 +13,9 @@ export default async function CheckoutPage() {
         deliveryMinimum={settings.deliveryMinimum}
         deliveryNote={settings.deliveryNote}
         taxEnabled={settings.taxEnabled}
+        taxMode={settings.taxMode}
         taxRate={settings.taxRate}
+        taxFlatAmount={settings.taxFlatAmount}
         restaurantAddress={settings.address}
         restaurantPhone={settings.phone}
       />

@@ -199,7 +199,9 @@ model SiteSettings {
   deliveryMinimum      Float?
   deliveryNote         String?
   taxEnabled           Boolean  @default(false)
+  taxMode              String   @default("percentage")
   taxRate              Float?
+  taxFlatAmount        Float?
   orderReceivedNote    String   @default("Your order has been received and will be reviewed by our team.")
 
   // Catering Settings

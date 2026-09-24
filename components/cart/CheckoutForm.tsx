@@ -12,7 +12,9 @@ type Props = {
   deliveryMinimum: number | null;
   deliveryNote: string | null;
   taxEnabled: boolean;
+  taxMode: string;
   taxRate: number | null;
+  taxFlatAmount: number | null;
   restaurantAddress: string;
   restaurantPhone: string;
 };
@@ -38,7 +40,13 @@ export default function CheckoutForm(props: Props) {
     orderType === "DELIVERY" && props.deliveryEnabled && props.deliveryFee != null
       ? props.deliveryFee
       : 0;
-  const tax = props.taxEnabled && props.taxRate ? subtotal * props.taxRate : 0;
+  const tax = !props.taxEnabled
+    ? 0
+    : props.taxMode === "flat"
+    ? props.taxFlatAmount ?? 0
+    : props.taxRate
+    ? subtotal * props.taxRate
+    : 0;
   const total = subtotal + deliveryFee + tax;
 
   const belowMinimum =

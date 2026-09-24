@@ -11,7 +11,9 @@ type Values = {
   deliveryMinimum: number | null;
   deliveryNote: string | null;
   taxEnabled: boolean;
+  taxMode: string;
   taxRate: number | null;
+  taxFlatAmount: number | null;
   orderReceivedNote: string;
 };
 
@@ -113,18 +115,60 @@ export default function OrderingSettingsForm({ initialValues }: { initialValues:
       </label>
 
       {v.taxEnabled && (
-        <div className="pl-6">
-          <label className="block text-sm font-medium mb-1.5">Tax Rate (%)</label>
-          <input
-            type="number"
-            step="0.01"
-            value={v.taxRate ? v.taxRate * 100 : ""}
-            onChange={(e) =>
-              setV({ ...v, taxRate: e.target.value ? parseFloat(e.target.value) / 100 : null })
-            }
-            placeholder="e.g. 8 for 8%"
-            className="w-40 rounded-lg border border-black/10 px-3 py-2"
-          />
+        <div className="pl-6 space-y-3">
+          <div className="flex gap-4">
+            <label className="flex items-center gap-2 text-sm">
+              <input
+                type="radio"
+                name="taxMode"
+                checked={v.taxMode === "percentage"}
+                onChange={() => setV({ ...v, taxMode: "percentage" })}
+              />
+              Percentage of order
+            </label>
+            <label className="flex items-center gap-2 text-sm">
+              <input
+                type="radio"
+                name="taxMode"
+                checked={v.taxMode === "flat"}
+                onChange={() => setV({ ...v, taxMode: "flat" })}
+              />
+              Flat fee ($)
+            </label>
+          </div>
+
+          {v.taxMode === "percentage" ? (
+            <div>
+              <label className="block text-sm font-medium mb-1.5">Tax Rate (%)</label>
+              <input
+                type="number"
+                step="0.01"
+                value={v.taxRate ? v.taxRate * 100 : ""}
+                onChange={(e) =>
+                  setV({ ...v, taxRate: e.target.value ? parseFloat(e.target.value) / 100 : null })
+                }
+                placeholder="e.g. 8 for 8%"
+                className="w-40 rounded-lg border border-black/10 px-3 py-2"
+              />
+            </div>
+          ) : (
+            <div>
+              <label className="block text-sm font-medium mb-1.5">Flat Tax Amount ($)</label>
+              <input
+                type="number"
+                step="0.01"
+                value={v.taxFlatAmount ?? ""}
+                onChange={(e) =>
+                  setV({ ...v, taxFlatAmount: e.target.value ? parseFloat(e.target.value) : null })
+                }
+                placeholder="e.g. 8.99"
+                className="w-40 rounded-lg border border-black/10 px-3 py-2"
+              />
+              <p className="text-xs text-mawa-black/50 mt-1">
+                This exact amount is added to every order, regardless of order size.
+              </p>
+            </div>
+          )}
         </div>
       )}
 
