@@ -1,5 +1,21 @@
 import Link from "next/link";
-import { Instagram, MapPin, Phone } from "lucide-react";
+import { Instagram, MapPin, Phone, Facebook } from "lucide-react";
+
+// lucide-react has no TikTok logo (trademark reasons), so it's a small inline SVG icon instead.
+function TikTokIcon({ size = 16, className = "" }: { size?: number; className?: string }) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="currentColor"
+      className={className}
+      aria-hidden="true"
+    >
+      <path d="M16.6 5.82a4.28 4.28 0 0 1-2.72-1.3A4.26 4.26 0 0 1 12.6 1.5h-2.9v14.1a2.6 2.6 0 1 1-1.86-2.5V9.9a5.5 5.5 0 1 0 4.76 5.45V9.06a7.16 7.16 0 0 0 4 1.22V7.3a4.26 4.26 0 0 1-.9-.09v-1.4z" />
+    </svg>
+  );
+}
 
 export default function Footer({ settings }: { settings: any }) {
   return (
@@ -20,9 +36,30 @@ export default function Footer({ settings }: { settings: any }) {
             <a
               href={settings.instagramUrl}
               target="_blank"
+              rel="noopener noreferrer"
               className="flex items-center gap-2 hover:text-mawa-gold"
             >
               <Instagram size={16} className="text-mawa-gold shrink-0" /> @mawahouse_1
+            </a>
+          )}
+          {settings.tiktokUrl && (
+            <a
+              href={settings.tiktokUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-2 hover:text-mawa-gold"
+            >
+              <TikTokIcon className="text-mawa-gold shrink-0" /> TikTok
+            </a>
+          )}
+          {settings.facebookUrl && (
+            <a
+              href={settings.facebookUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-2 hover:text-mawa-gold"
+            >
+              <Facebook size={16} className="text-mawa-gold shrink-0" /> Facebook
             </a>
           )}
         </div>
