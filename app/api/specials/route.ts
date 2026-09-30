@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth/options";
 import { prisma } from "@/lib/db/prisma";
+import { revalidatePath } from "next/cache";
 
 export async function GET() {
   const specials = await prisma.special.findMany({ orderBy: { sortOrder: "asc" } });
@@ -23,5 +24,6 @@ export async function POST(req: NextRequest) {
       endDate: body.endDate ? new Date(body.endDate) : null,
     },
   });
+  revalidatePath("/", "layout");
   return NextResponse.json(special, { status: 201 });
 }

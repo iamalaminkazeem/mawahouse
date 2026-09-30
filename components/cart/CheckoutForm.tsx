@@ -83,23 +83,25 @@ export default function CheckoutForm(props: Props) {
         specialInstructions,
         items: lines.map((l) => ({
           menuItemId: l.menuItemId,
-          itemNameSnapshot: l.name,
-          priceSnapshot: l.price,
           quantity: l.quantity,
           specialInstructions: l.specialInstructions,
-          addOns: l.addOns.map((a) => ({ nameSnapshot: a.name, priceSnapshot: a.price })),
+          addOnIds: l.addOns.map((a) => a.id),
         })),
-        subtotal,
-        deliveryFee,
-        tax,
-        total,
       }),
     });
 
     setSubmitting(false);
 
     if (!res.ok) {
-      setError("Something went wrong submitting your order. Please try again or call us directly.");
+      // The server prices and validates everything itself (menu prices may have
+      // changed, an item may have gone unavailable, etc.), so surface its message
+      // when it has one instead of a generic failure.
+      const body = await res.json().catch(() => null);
+      setError(
+        typeof body?.error === "string"
+          ? body.error
+          : "Something went wrong submitting your order. Please try again or call us directly."
+      );
       return;
     }
 

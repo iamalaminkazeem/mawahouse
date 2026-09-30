@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth/options";
 import { prisma } from "@/lib/db/prisma";
+import { revalidatePath } from "next/cache";
 
 export async function PATCH(req: NextRequest, { params }: { params: { id: string } }) {
   const session = await getServerSession(authOptions);
@@ -9,6 +10,7 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
 
   const body = await req.json();
   const entry = await prisma.buffetEntry.update({ where: { id: params.id }, data: body });
+  revalidatePath("/catering");
   return NextResponse.json(entry);
 }
 
@@ -17,5 +19,6 @@ export async function DELETE(_req: NextRequest, { params }: { params: { id: stri
   if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   await prisma.buffetEntry.delete({ where: { id: params.id } });
+  revalidatePath("/catering");
   return NextResponse.json({ ok: true });
 }

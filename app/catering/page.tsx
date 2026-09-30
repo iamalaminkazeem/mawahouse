@@ -1,8 +1,23 @@
 import { getSettings } from "@/lib/utils/settings";
-import { Utensils, Clock, Users, Truck } from "lucide-react";
+import { prisma } from "@/lib/db/prisma";
+import { Utensils, Clock, Users, Truck, Calendar } from "lucide-react";
+
+// Rebuild this page from the database at most once a minute, so buffet
+// entries added in /admin/buffet show up without a full redeploy.
+export const revalidate = 60;
 
 export default async function CateringPage() {
   const settings = await getSettings();
+
+  let buffetEntries: any[] = [];
+  try {
+    buffetEntries = await prisma.buffetEntry.findMany({
+      where: { available: true },
+      orderBy: { createdAt: "asc" },
+    });
+  } catch {
+    buffetEntries = [];
+  }
 
   // Catering Menu items matching the structure from the reference site
   const cateringMenu = [
@@ -94,6 +109,43 @@ export default async function CateringPage() {
           <p className="text-sm text-mawa-black/70">Flexible options available for your venue location</p>
         </div>
       </div>
+
+      {/* BUFFET SCHEDULE — only shows once entries are added in /admin/buffet */}
+      {buffetEntries.length > 0 && (
+        <div className="mb-16">
+          <div className="border-b border-mawa-gold/30 pb-4 mb-8 text-center">
+            <h2 className="text-2xl font-bold text-mawa-black">Buffet Schedule</h2>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+            {buffetEntries.map((entry) => (
+              <div
+                key={entry.id}
+                className="bg-white p-6 rounded-2xl border border-mawa-gold/20 shadow-sm"
+              >
+                <div className="flex items-start justify-between gap-3">
+                  <h3 className="text-lg font-bold text-mawa-black">{entry.name}</h3>
+                  {entry.price != null && (
+                    <span className="text-mawa-gold font-semibold shrink-0">
+                      ${entry.price.toFixed(2)}
+                    </span>
+                  )}
+                </div>
+                {entry.description && (
+                  <p className="text-sm text-mawa-black/60 mt-1">{entry.description}</p>
+                )}
+                <div className="flex items-center gap-2 text-sm text-mawa-black/70 mt-3">
+                  <Calendar size={15} className="text-mawa-gold" />
+                  <span>
+                    {entry.days.length > 0 ? entry.days.join(", ") : "Days not set"}
+                    {(entry.startTime || entry.endTime) &&
+                      ` · ${entry.startTime || "—"} to ${entry.endTime || "—"}`}
+                  </span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Catering Menu Display */}
       <div id="catering-menu" className="space-y-12">

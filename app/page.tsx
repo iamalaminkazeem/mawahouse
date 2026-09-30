@@ -3,8 +3,13 @@ import Image from "next/image";
 import { prisma } from "@/lib/db/prisma";
 import { getSettings } from "@/lib/utils/settings";
 
+// Rebuild this page from the database at most once a minute, instead of only
+// at deploy time, so admin edits (featured dishes, specials) show up promptly.
+export const revalidate = 60;
+
 export default async function HomePage() {
   const settings = await getSettings();
+  const now = new Date();
 
   let featured: any[] = [];
   try {
@@ -24,6 +29,21 @@ export default async function HomePage() {
     }
   } catch {
     featured = [];
+  }
+
+  let specials: any[] = [];
+  try {
+    specials = await prisma.special.findMany({
+      where: {
+        active: true,
+        OR: [{ startDate: null }, { startDate: { lte: now } }],
+        AND: [{ OR: [{ endDate: null }, { endDate: { gte: now } }] }],
+      },
+      orderBy: [{ featured: "desc" }, { sortOrder: "asc" }],
+      take: 4,
+    });
+  } catch {
+    specials = [];
   }
 
   return (
@@ -75,6 +95,47 @@ export default async function HomePage() {
             "MaWa House brings the flavors, warmth, and community of African cuisine to Atlanta — a place to gather, share a meal, and feel at home."}
         </p>
       </section>
+
+      {/* SPECIALS — only shows once something is added and active in /admin/specials */}
+      {specials.length > 0 && (
+        <section className="bg-mawa-cream py-20">
+          <div className="container-mawa">
+            <div className="text-center mb-10">
+              <p className="uppercase tracking-[0.2em] text-mawa-gold text-xs font-semibold mb-3">
+                Limited Time
+              </p>
+              <h2 className="section-heading">Specials</h2>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 max-w-4xl mx-auto">
+              {specials.map((special) => (
+                <div
+                  key={special.id}
+                  className="bg-white rounded-2xl border border-mawa-gold/20 shadow-sm p-6 flex gap-4"
+                >
+                  {special.imageUrl && (
+                    <div className="relative w-20 h-20 shrink-0 rounded-xl overflow-hidden bg-mawa-brown/10">
+                      <Image src={special.imageUrl} alt={special.name} fill className="object-cover" />
+                    </div>
+                  )}
+                  <div>
+                    <div className="flex items-baseline justify-between gap-3">
+                      <h3 className="font-serif text-lg font-semibold">{special.name}</h3>
+                      {special.price != null && (
+                        <span className="text-mawa-red font-semibold shrink-0">
+                          ${special.price.toFixed(2)}
+                        </span>
+                      )}
+                    </div>
+                    {special.description && (
+                      <p className="text-sm text-mawa-black/60 mt-1">{special.description}</p>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* FEATURED DISHES */}
       {featured.length > 0 && (

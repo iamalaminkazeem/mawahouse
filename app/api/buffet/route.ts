@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth/options";
 import { prisma } from "@/lib/db/prisma";
+import { revalidatePath } from "next/cache";
 
 export async function GET() {
   const entries = await prisma.buffetEntry.findMany({ orderBy: { createdAt: "asc" } });
@@ -23,5 +24,6 @@ export async function POST(req: NextRequest) {
       endTime: body.endTime || null,
     },
   });
+  revalidatePath("/catering");
   return NextResponse.json(entry, { status: 201 });
 }
