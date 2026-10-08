@@ -8,6 +8,11 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
   if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const body = await req.json();
+  const validStatuses = ["RECEIVED", "CONFIRMED", "PREPARING", "READY", "COMPLETED", "CANCELLED"];
+  if (!validStatuses.includes(body.status)) {
+    return NextResponse.json({ error: "Invalid status" }, { status: 400 });
+  }
+
   const order = await prisma.order.update({
     where: { id: params.id },
     data: { status: body.status },
@@ -15,7 +20,10 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
   return NextResponse.json(order);
 }
 
-export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
+export async function GET(_req: NextRequest, { params }: { params: { id: string } }) {
+  const session = await getServerSession(authOptions);
+  if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
   const order = await prisma.order.findUnique({
     where: { id: params.id },
     include: { items: { include: { addOns: true } } },

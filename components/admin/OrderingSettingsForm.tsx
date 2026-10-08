@@ -11,7 +11,7 @@ type Values = {
   deliveryMinimum: number | null;
   deliveryNote: string | null;
   taxEnabled: boolean;
-  taxMode: string;
+  taxMode: "PERCENTAGE" | "FLAT";
   taxRate: number | null;
   taxFlatAmount: number | null;
   orderReceivedNote: string;
@@ -115,29 +115,20 @@ export default function OrderingSettingsForm({ initialValues }: { initialValues:
       </label>
 
       {v.taxEnabled && (
-        <div className="pl-6 space-y-3">
-          <div className="flex gap-4">
-            <label className="flex items-center gap-2 text-sm">
-              <input
-                type="radio"
-                name="taxMode"
-                checked={v.taxMode === "percentage"}
-                onChange={() => setV({ ...v, taxMode: "percentage" })}
-              />
-              Percentage of order
-            </label>
-            <label className="flex items-center gap-2 text-sm">
-              <input
-                type="radio"
-                name="taxMode"
-                checked={v.taxMode === "flat"}
-                onChange={() => setV({ ...v, taxMode: "flat" })}
-              />
-              Flat fee ($)
-            </label>
+        <div className="pl-6 space-y-4">
+          <div>
+            <label className="block text-sm font-medium mb-1.5">Tax Type</label>
+            <select
+              value={v.taxMode}
+              onChange={(e) => setV({ ...v, taxMode: e.target.value as "PERCENTAGE" | "FLAT" })}
+              className="w-56 rounded-lg border border-black/10 px-3 py-2"
+            >
+              <option value="PERCENTAGE">Percentage of order</option>
+              <option value="FLAT">Flat amount per order</option>
+            </select>
           </div>
 
-          {v.taxMode === "percentage" ? (
+          {v.taxMode === "PERCENTAGE" ? (
             <div>
               <label className="block text-sm font-medium mb-1.5">Tax Rate (%)</label>
               <input
@@ -153,7 +144,7 @@ export default function OrderingSettingsForm({ initialValues }: { initialValues:
             </div>
           ) : (
             <div>
-              <label className="block text-sm font-medium mb-1.5">Flat Tax Amount ($)</label>
+              <label className="block text-sm font-medium mb-1.5">Flat Tax/Fee Amount ($)</label>
               <input
                 type="number"
                 step="0.01"
@@ -161,12 +152,9 @@ export default function OrderingSettingsForm({ initialValues }: { initialValues:
                 onChange={(e) =>
                   setV({ ...v, taxFlatAmount: e.target.value ? parseFloat(e.target.value) : null })
                 }
-                placeholder="e.g. 8.99"
+                placeholder="e.g. 2.00"
                 className="w-40 rounded-lg border border-black/10 px-3 py-2"
               />
-              <p className="text-xs text-mawa-black/50 mt-1">
-                This exact amount is added to every order, regardless of order size.
-              </p>
             </div>
           )}
         </div>

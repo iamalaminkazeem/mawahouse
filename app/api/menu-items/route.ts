@@ -6,7 +6,10 @@ import { prisma } from "@/lib/db/prisma";
 import { menuItemSchema } from "@/lib/validations/menuItem";
 
 export async function GET() {
+  const session = await getServerSession(authOptions);
+
   const items = await prisma.menuItem.findMany({
+    where: session ? undefined : { available: true, category: { visible: true } },
     orderBy: [{ categoryId: "asc" }, { sortOrder: "asc" }],
     include: { category: true },
   });

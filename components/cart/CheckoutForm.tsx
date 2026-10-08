@@ -12,7 +12,7 @@ type Props = {
   deliveryMinimum: number | null;
   deliveryNote: string | null;
   taxEnabled: boolean;
-  taxMode: string;
+  taxMode: "PERCENTAGE" | "FLAT";
   taxRate: number | null;
   taxFlatAmount: number | null;
   restaurantAddress: string;
@@ -36,17 +36,16 @@ export default function CheckoutForm(props: Props) {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
 
+  // Estimates only — the server recalculates the real total from current menu prices and settings.
   const deliveryFee =
     orderType === "DELIVERY" && props.deliveryEnabled && props.deliveryFee != null
       ? props.deliveryFee
       : 0;
   const tax = !props.taxEnabled
     ? 0
-    : props.taxMode === "flat"
+    : props.taxMode === "FLAT"
     ? props.taxFlatAmount ?? 0
-    : props.taxRate
-    ? subtotal * props.taxRate
-    : 0;
+    : subtotal * (props.taxRate ?? 0);
   const total = subtotal + deliveryFee + tax;
 
   const belowMinimum =
@@ -67,47 +66,48 @@ export default function CheckoutForm(props: Props) {
     setError("");
     setSubmitting(true);
 
-    const res = await fetch("/api/orders", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        customerName: name,
-        customerPhone: phone,
-        customerEmail: email || null,
-        orderType,
-        deliveryAddress: orderType === "DELIVERY" ? address : null,
-        deliveryCity: orderType === "DELIVERY" ? city : null,
-        deliveryState: orderType === "DELIVERY" ? state : null,
-        deliveryZip: orderType === "DELIVERY" ? zip : null,
-        deliveryInstructions: orderType === "DELIVERY" ? deliveryInstructions : null,
-        specialInstructions,
-        items: lines.map((l) => ({
-          menuItemId: l.menuItemId,
-          quantity: l.quantity,
-          specialInstructions: l.specialInstructions,
-          addOnIds: l.addOns.map((a) => a.id),
-        })),
-      }),
-    });
+    try {
+      const res = await fetch("/api/orders", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          customerName: name,
+          customerPhone: phone,
+          customerEmail: email || null,
+          orderType,
+          deliveryAddress: orderType === "DELIVERY" ? address : null,
+          deliveryCity: orderType === "DELIVERY" ? city : null,
+          deliveryState: orderType === "DELIVERY" ? state : null,
+          deliveryZip: orderType === "DELIVERY" ? zip : null,
+          deliveryInstructions: orderType === "DELIVERY" ? deliveryInstructions : null,
+          specialInstructions,
+          items: lines.map((l) => ({
+            menuItemId: l.menuItemId,
+            quantity: l.quantity,
+            specialInstructions: l.specialInstructions,
+            addOnIds: l.addOns.map((a) => a.id),
+          })),
+        }),
+      });
 
-    setSubmitting(false);
+      if (!res.ok) {
+        const data = await res.json().catch(() => null);
+        setError(
+          typeof data?.error === "string"
+            ? data.error
+            : "Something went wrong submitting your order. Please try again or call us directly."
+        );
+        setSubmitting(false);
+        return;
+      }
 
-    if (!res.ok) {
-      // The server prices and validates everything itself (menu prices may have
-      // changed, an item may have gone unavailable, etc.), so surface its message
-      // when it has one instead of a generic failure.
-      const body = await res.json().catch(() => null);
-      setError(
-        typeof body?.error === "string"
-          ? body.error
-          : "Something went wrong submitting your order. Please try again or call us directly."
-      );
-      return;
+      const order = await res.json();
+      clearCart();
+      router.push(`/order-confirmation/${order.orderNumber}`);
+    } catch {
+      setError("Something went wrong submitting your order. Please try again or call us directly.");
+      setSubmitting(false);
     }
-
-    const order = await res.json();
-    clearCart();
-    router.push(`/order-confirmation/${order.orderNumber}`);
   }
 
   if (lines.length === 0) {
@@ -283,6 +283,9 @@ export default function CheckoutForm(props: Props) {
             <span className="text-mawa-red">${total.toFixed(2)}</span>
           </div>
         </div>
+        <p className="text-xs text-mawa-black/40 mt-2">
+          Estimated total — the exact amount is confirmed when your order is placed.
+        </p>
       </div>
 
       {error && <p className="text-sm text-red-600 bg-red-50 rounded-lg px-3 py-2">{error}</p>}

@@ -115,6 +115,11 @@ enum OrderStatus {
   CANCELLED
 }
 
+enum TaxMode {
+  PERCENTAGE
+  FLAT
+}
+
 model Order {
   id                   String      @id @default(cuid())
   orderNumber          String      @unique
@@ -173,7 +178,7 @@ model SiteSettings {
 
   restaurantName      String   @default("MaWa House")
   tagline             String   @default("Taste Africa. Feel at Home.")
-  address             String   @default("524 Main St, Suite B, Atlanta, GA 30011")
+  address              String  @default("524 Main St, Suite B, Atlanta, GA 30011")
   phone               String   @default("470-815-6319")
   whatsappNumber      String?
   email               String?
@@ -199,7 +204,7 @@ model SiteSettings {
   deliveryMinimum      Float?
   deliveryNote         String?
   taxEnabled           Boolean  @default(false)
-  taxMode              String   @default("percentage")
+  taxMode              TaxMode  @default(PERCENTAGE)
   taxRate              Float?
   taxFlatAmount        Float?
   orderReceivedNote    String   @default("Your order has been received and will be reviewed by our team.")

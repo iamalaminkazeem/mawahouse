@@ -36,7 +36,7 @@ export async function getSettings() {
       deliveryMinimum: null,
       deliveryNote: null,
       taxEnabled: false,
-      taxMode: "percentage",
+      taxMode: "PERCENTAGE" as const,
       taxRate: null,
       taxFlatAmount: null,
       orderReceivedNote: "Your order has been received and will be reviewed by our team.",

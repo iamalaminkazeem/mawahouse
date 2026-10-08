@@ -4,7 +4,12 @@ import { authOptions } from "@/lib/auth/options";
 import { prisma } from "@/lib/db/prisma";
 
 export async function GET() {
-  const images = await prisma.galleryImage.findMany({ orderBy: { sortOrder: "asc" } });
+  const session = await getServerSession(authOptions);
+
+  const images = await prisma.galleryImage.findMany({
+    where: session ? undefined : { hidden: false },
+    orderBy: { sortOrder: "asc" },
+  });
   return NextResponse.json(images);
 }
 

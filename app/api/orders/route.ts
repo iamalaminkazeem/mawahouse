@@ -5,32 +5,33 @@ import { prisma } from "@/lib/db/prisma";
 import { getSettings } from "@/lib/utils/settings";
 import { z } from "zod";
 
-// NOTE: the client sends WHAT was ordered (which items, which add-ons, how many).
-// It never sends prices, subtotal, tax, delivery fee, or total — those are always
-// looked up fresh from the database below, so a tampered request can't change
-// what anything costs.
 const orderSchema = z.object({
-  customerName: z.string().min(1),
-  customerPhone: z.string().min(1),
+  customerName: z.string().min(1).max(200),
+  customerPhone: z.string().min(1).max(30),
   customerEmail: z.string().email().optional().nullable(),
   orderType: z.enum(["PICKUP", "DELIVERY"]),
-  deliveryAddress: z.string().optional().nullable(),
-  deliveryCity: z.string().optional().nullable(),
-  deliveryState: z.string().optional().nullable(),
-  deliveryZip: z.string().optional().nullable(),
-  deliveryInstructions: z.string().optional().nullable(),
+  deliveryAddress: z.string().max(300).optional().nullable(),
+  deliveryCity: z.string().max(100).optional().nullable(),
+  deliveryState: z.string().max(50).optional().nullable(),
+  deliveryZip: z.string().max(20).optional().nullable(),
+  deliveryInstructions: z.string().max(300).optional().nullable(),
   specialInstructions: z.string().max(300).optional().nullable(),
   items: z
     .array(
       z.object({
         menuItemId: z.string().min(1),
         quantity: z.number().int().min(1).max(50),
-        specialInstructions: z.string().optional().nullable(),
-        addOnIds: z.array(z.string()).default([]),
+        specialInstructions: z.string().max(200).optional().nullable(),
+        addOnIds: z.array(z.string()).max(20).default([]),
       })
     )
-    .min(1),
+    .min(1)
+    .max(50),
 });
+
+function round2(n: number) {
+  return Math.round(n * 100) / 100;
+}
 
 async function nextOrderNumber() {
   const counter = await prisma.orderCounter.upsert({
@@ -48,65 +49,78 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: parsed.error.flatten() }, { status: 400 });
   }
   const data = parsed.data;
+
+  if (data.orderType === "DELIVERY") {
+    if (
+      !data.deliveryAddress?.trim() ||
+      !data.deliveryCity?.trim() ||
+      !data.deliveryZip?.trim()
+    ) {
+      return NextResponse.json({ error: "Delivery address is incomplete." }, { status: 400 });
+    }
+  }
+
   const settings = await getSettings();
 
-  // Look up every menu item referenced in the order, in one query, so we can
-  // price everything from what's actually in the database right now.
+  if (data.orderType === "DELIVERY" && !settings.deliveryEnabled) {
+    return NextResponse.json({ error: "Delivery is not available right now." }, { status: 400 });
+  }
+
+  // Look up every menu item and add-on from the database — never trust prices from the client.
   const menuItemIds = [...new Set(data.items.map((i) => i.menuItemId))];
-  const menuItems = await prisma.menuItem.findMany({
-    where: { id: { in: menuItemIds } },
+  const dbItems = await prisma.menuItem.findMany({
+    where: { id: { in: menuItemIds }, available: true },
     include: { addOns: true },
   });
-  const menuItemById = new Map(menuItems.map((m) => [m.id, m]));
+  const itemsById = new Map(dbItems.map((i) => [i.id, i]));
 
-  const priced: {
+  const resolvedItems: {
     menuItemId: string;
     itemNameSnapshot: string;
     priceSnapshot: number;
     quantity: number;
-    specialInstructions: string | null;
+    specialInstructions: string | null | undefined;
     subtotal: number;
     addOns: { nameSnapshot: string; priceSnapshot: number }[];
   }[] = [];
 
-  for (const item of data.items) {
-    const menuItem = menuItemById.get(item.menuItemId);
-    if (!menuItem) {
+  for (const line of data.items) {
+    const dbItem = itemsById.get(line.menuItemId);
+    if (!dbItem) {
       return NextResponse.json(
-        { error: `One of the items in your cart is no longer available.` },
-        { status: 400 }
-      );
-    }
-    if (!menuItem.available) {
-      return NextResponse.json(
-        { error: `"${menuItem.name}" is currently unavailable. Please remove it and try again.` },
+        { error: "One or more items in your cart are no longer available. Please refresh your cart." },
         { status: 400 }
       );
     }
 
-    const addOnById = new Map(menuItem.addOns.map((a) => [a.id, a]));
+    const availableAddOns = new Map(dbItem.addOns.filter((a) => a.available).map((a) => [a.id, a]));
     const resolvedAddOns: { nameSnapshot: string; priceSnapshot: number }[] = [];
-    for (const addOnId of item.addOnIds) {
-      const addOn = addOnById.get(addOnId);
-      // An add-on ID that doesn't belong to this menu item, or isn't available, is dropped
-      // rather than trusted — it can only ever be an add-on this specific item actually offers.
-      if (!addOn || !addOn.available) continue;
+    for (const addOnId of line.addOnIds) {
+      const addOn = availableAddOns.get(addOnId);
+      if (!addOn) {
+        return NextResponse.json(
+          { error: `An add-on for "${dbItem.name}" is no longer available. Please refresh your cart.` },
+          { status: 400 }
+        );
+      }
       resolvedAddOns.push({ nameSnapshot: addOn.name, priceSnapshot: addOn.price });
     }
 
-    const unitPrice = menuItem.price + resolvedAddOns.reduce((s, a) => s + a.priceSnapshot, 0);
-    priced.push({
-      menuItemId: menuItem.id,
-      itemNameSnapshot: menuItem.name,
-      priceSnapshot: menuItem.price,
-      quantity: item.quantity,
-      specialInstructions: item.specialInstructions ?? null,
-      subtotal: unitPrice * item.quantity,
+    const addOnTotal = resolvedAddOns.reduce((s, a) => s + a.priceSnapshot, 0);
+    const lineSubtotal = round2((dbItem.price + addOnTotal) * line.quantity);
+
+    resolvedItems.push({
+      menuItemId: dbItem.id,
+      itemNameSnapshot: dbItem.name,
+      priceSnapshot: dbItem.price,
+      quantity: line.quantity,
+      specialInstructions: line.specialInstructions,
+      subtotal: lineSubtotal,
       addOns: resolvedAddOns,
     });
   }
 
-  const subtotal = priced.reduce((s, i) => s + i.subtotal, 0);
+  const subtotal = round2(resolvedItems.reduce((s, i) => s + i.subtotal, 0));
 
   if (
     data.orderType === "DELIVERY" &&
@@ -126,13 +140,11 @@ export async function POST(req: NextRequest) {
 
   const tax = !settings.taxEnabled
     ? 0
-    : settings.taxMode === "flat"
-    ? settings.taxFlatAmount ?? 0
-    : settings.taxRate
-    ? subtotal * settings.taxRate
-    : 0;
+    : settings.taxMode === "FLAT"
+    ? round2(settings.taxFlatAmount ?? 0)
+    : round2(subtotal * (settings.taxRate ?? 0));
 
-  const total = subtotal + deliveryFee + tax;
+  const total = round2(subtotal + deliveryFee + tax);
 
   const orderNumber = await nextOrderNumber();
 
@@ -143,18 +155,18 @@ export async function POST(req: NextRequest) {
       customerPhone: data.customerPhone,
       customerEmail: data.customerEmail,
       orderType: data.orderType,
-      deliveryAddress: data.deliveryAddress,
-      deliveryCity: data.deliveryCity,
-      deliveryState: data.deliveryState,
-      deliveryZip: data.deliveryZip,
-      deliveryInstructions: data.deliveryInstructions,
+      deliveryAddress: data.orderType === "DELIVERY" ? data.deliveryAddress : null,
+      deliveryCity: data.orderType === "DELIVERY" ? data.deliveryCity : null,
+      deliveryState: data.orderType === "DELIVERY" ? data.deliveryState : null,
+      deliveryZip: data.orderType === "DELIVERY" ? data.deliveryZip : null,
+      deliveryInstructions: data.orderType === "DELIVERY" ? data.deliveryInstructions : null,
       specialInstructions: data.specialInstructions,
       subtotal,
       deliveryFee,
       tax,
       total,
       items: {
-        create: priced.map((item) => ({
+        create: resolvedItems.map((item) => ({
           menuItemId: item.menuItemId,
           itemNameSnapshot: item.itemNameSnapshot,
           priceSnapshot: item.priceSnapshot,

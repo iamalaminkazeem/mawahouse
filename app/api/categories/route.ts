@@ -13,9 +13,16 @@ const categorySchema = z.object({
 });
 
 export async function GET() {
+  const session = await getServerSession(authOptions);
+
   const categories = await prisma.category.findMany({
+    where: session ? undefined : { visible: true },
     orderBy: { sortOrder: "asc" },
-    include: { _count: { select: { items: true } } },
+    include: {
+      _count: {
+        select: { items: session ? true : { where: { available: true } } },
+      },
+    },
   });
   return NextResponse.json(categories);
 }

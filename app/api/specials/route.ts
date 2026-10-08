@@ -2,10 +2,14 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth/options";
 import { prisma } from "@/lib/db/prisma";
-import { revalidatePath } from "next/cache";
 
 export async function GET() {
-  const specials = await prisma.special.findMany({ orderBy: { sortOrder: "asc" } });
+  const session = await getServerSession(authOptions);
+
+  const specials = await prisma.special.findMany({
+    where: session ? undefined : { active: true },
+    orderBy: { sortOrder: "asc" },
+  });
   return NextResponse.json(specials);
 }
 
@@ -24,6 +28,5 @@ export async function POST(req: NextRequest) {
       endDate: body.endDate ? new Date(body.endDate) : null,
     },
   });
-  revalidatePath("/", "layout");
   return NextResponse.json(special, { status: 201 });
 }
